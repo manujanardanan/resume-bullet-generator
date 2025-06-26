@@ -40,7 +40,7 @@ if step == 1:
         bullets = generate_initial_bullets(job_description)
         st.session_state["bullets"] = bullets
         st.session_state["step"] = 2
-        st.experimental_rerun()
+        st.rerun()
 
 elif step == 2:
     st.subheader("Step 2: Initial Resume Bullet Points")
@@ -52,10 +52,10 @@ elif step == 2:
         enhanced_bullets = enhance_bullets_with_impact(bullets)
         st.session_state["enhanced_bullets"] = enhanced_bullets
         st.session_state["step"] = 3
-        st.experimental_rerun()
+        st.rerun()
     elif st.button("Go Back and Edit Input"):
         st.session_state["step"] = 1
-        st.experimental_rerun()
+        st.rerun()
 
 elif step == 3:
     st.subheader("Step 3: Enhanced Resume Bullet Points with Impact")
@@ -66,4 +66,4 @@ elif step == 3:
     st.success("Done! You can copy and use these in your resume.")
     if st.button("Start Over"):
         st.session_state.clear()
-        st.experimental_rerun()
+        st.rerun()
