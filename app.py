@@ -1,13 +1,13 @@
 import streamlit as st
-import openai
 import os
+from openai import OpenAI
 
-# Set OpenAI API key from environment variable
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# Initialize OpenAI client using environment variable
+client = OpenAI()
 
 def generate_initial_bullets(job_description):
     prompt = f"Convert the following job responsibilities into 3-5 resume bullet points using professional resume language with action verbs:\n\n{job_description}\n\nBullet Points:"
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
             {"role": "user", "content": prompt}
@@ -19,7 +19,7 @@ def generate_initial_bullets(job_description):
 
 def enhance_bullets_with_impact(bullets):
     prompt = f"Enhance the following resume bullet points to show clear impact, outcomes, or metrics:\n\n{chr(10).join(bullets)}\n\nEnhanced Bullet Points:"
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
             {"role": "user", "content": prompt}
