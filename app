@@ -1,40 +1,33 @@
 import streamlit as st
 import openai
+import os
 
-# Set your OpenAI API key
-openai.api_key = "YOUR_API_KEY"
+# Set OpenAI API key from environment variable
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 def generate_initial_bullets(job_description):
-    prompt = f"""
-    Convert the following job responsibilities into 3-5 resume bullet points using professional resume language with action verbs:
-
-    {job_description}
-    
-    Bullet Points:
-    """
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=150,
-        temperature=0.7
+    prompt = f"Convert the following job responsibilities into 3-5 resume bullet points using professional resume language with action verbs:\n\n{job_description}\n\nBullet Points:"
+    response = openai.ChatCompletion.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.7,
+        max_tokens=300
     )
-    return response.choices[0].text.strip().split("\n")
+    return response.choices[0].message.content.strip().split("\n")
 
 def enhance_bullets_with_impact(bullets):
-    prompt = f"""
-    Enhance the following resume bullet points to show clear impact, outcomes, or metrics:
-
-    {chr(10).join(bullets)}
-
-    Enhanced Bullet Points:
-    """
-    response = openai.Completion.create(
-        engine="text-davinci-003",
-        prompt=prompt,
-        max_tokens=200,
-        temperature=0.7
+    prompt = f"Enhance the following resume bullet points to show clear impact, outcomes, or metrics:\n\n{chr(10).join(bullets)}\n\nEnhanced Bullet Points:"
+    response = openai.ChatCompletion.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        temperature=0.7,
+        max_tokens=300
     )
-    return response.choices[0].text.strip().split("\n")
+    return response.choices[0].message.content.strip().split("\n")
 
 st.title("Resume Bullet Point Generator")
 
