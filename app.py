@@ -2,16 +2,13 @@ import streamlit as st
 import os
 from openai import OpenAI
 
-# Initialize OpenAI client using environment variable
 client = OpenAI()
 
 def generate_initial_bullets(job_description):
     prompt = f"Convert the following job responsibilities into 3-5 resume bullet points using professional resume language with action verbs:\n\n{job_description}\n\nBullet Points:"
     response = client.chat.completions.create(
         model="gpt-4o",
-        messages=[
-            {"role": "user", "content": prompt}
-        ],
+        messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
         max_tokens=300
     )
@@ -21,16 +18,28 @@ def enhance_bullets_with_impact(bullets):
     prompt = f"Enhance the following resume bullet points to show clear impact, outcomes, or metrics:\n\n{chr(10).join(bullets)}\n\nEnhanced Bullet Points:"
     response = client.chat.completions.create(
         model="gpt-4o",
-        messages=[
-            {"role": "user", "content": prompt}
-        ],
+        messages=[{"role": "user", "content": prompt}],
         temperature=0.7,
         max_tokens=300
     )
     return response.choices[0].message.content.strip().split("\n")
 
-st.title("Resume Bullet Point Generator")
+def transform_bullet(bullet, transformation_type):
+    instructions = {
+        "shorten": "Rewrite this bullet point to be more concise while retaining the core message.",
+        "expand": "Add more detail to this bullet point, such as tools used, scope, or impact.",
+        "regenerate": "Rewrite this bullet point in a different way with the same intent, using professional resume tone."
+    }
+    prompt = f"{instructions[transformation_type]}\n\nBullet Point:\n{bullet}"
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.7,
+        max_tokens=150
+    )
+    return response.choices[0].message.content.strip()
 
+st.title("Resume Bullet Point Generator")
 step = st.session_state.get("step", 1)
 
 if step == 1:
@@ -45,8 +54,26 @@ if step == 1:
 elif step == 2:
     st.subheader("Step 2: Initial Resume Bullet Points")
     bullets = st.session_state["bullets"]
-    for bullet in bullets:
-        st.markdown(f"- {bullet}")
+
+    for i, bullet in enumerate(bullets):
+        st.markdown(f"**{i+1}.** {bullet}")
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            if st.button("🔁 Try a different version", key=f"regen_{i}"):
+                bullets[i] = transform_bullet(bullet, "regenerate")
+                st.session_state["bullets"] = bullets
+                st.rerun()
+        with col2:
+            if st.button("📉 Make it shorter", key=f"short_{i}"):
+                bullets[i] = transform_bullet(bullet, "shorten")
+                st.session_state["bullets"] = bullets
+                st.rerun()
+        with col3:
+            if st.button("📈 Expand", key=f"expand_{i}"):
+                bullets[i] = transform_bullet(bullet, "expand")
+                st.session_state["bullets"] = bullets
+                st.rerun()
 
     if st.button("Looks Good. Add Impact"):
         enhanced_bullets = enhance_bullets_with_impact(bullets)
